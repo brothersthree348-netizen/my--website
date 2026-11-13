@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopEase — Online Store</title>
+<style>
+:root{--ink:#172033;--muted:#667085;--brand:#5b5ce2;--bg:#f6f7fb;--line:#e8eaf0}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.nav{max-width:1150px;margin:auto;padding:16px 22px;display:flex;align-items:center;gap:20px}
+.logo{font-size:24px;font-weight:800;color:var(--brand);white-space:nowrap}.search{flex:1;min-width:100px}
+input,select,button{font:inherit}.search input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fafbff}
+button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;font-weight:700}
+.cart-btn,.primary{background:var(--brand);color:#fff}.cart-btn{white-space:nowrap}
+main{max-width:1150px;margin:28px auto;padding:0 22px}
+.hero{background:linear-gradient(120deg,#24265e,#696be8);color:white;padding:38px;border-radius:20px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.hero h1{font-size:clamp(28px,5vw,46px);margin:0 0 10px}.hero p{margin:0;color:#e3e4ff;line-height:1.5}.hero .tag{font-size:70px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 16px;flex-wrap:wrap}
+.toolbar select{padding:10px;border:1px solid var(--line);border-radius:9px;background:white}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.product{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;display:flex;flex-direction:column}
+.product img{width:100%;height:185px;object-fit:cover;background:#eee}
+.info{padding:15px;display:flex;flex-direction:column;gap:9px;flex:1}.category{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.info h3{margin:0;font-size:17px}.price{font-size:19px;font-weight:800}.info button{margin-top:auto}
+.empty{grid-column:1/-1;background:white;padding:30px;text-align:center;border-radius:12px;color:var(--muted)}
+.overlay{display:none;position:fixed;inset:0;background:#10182888;z-index:10;justify-content:flex-end}
+.overlay.open{display:flex}.drawer{width:min(440px,100%);height:100%;background:white;padding:22px;overflow:auto}
+.drawer-head{display:flex;justify-content:space-between;align-items:center}.drawer-head h2{margin:5px 0 20px}
+.close{background:#eef0f6}.cart-item{display:grid;grid-template-columns:65px 1fr auto;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:center}
+.cart-item img{width:65px;height:65px;object-fit:cover;border-radius:9px}.cart-item h4{margin:0 0 6px}.qty{display:flex;align-items:center;gap:8px;margin-top:8px}.qty button{padding:4px 9px;background:#eef0f6}
+.total{display:flex;justify-content:space-between;font-size:20px;font-weight:800;margin:22px 0}
+.checkout{width:100%;padding:14px}.note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px}
+footer{text-align:center;padding:35px 20px;color:var(--muted);font-size:13px}
+@media(max-width:900px){.products{grid-template-columns:repeat(3,1fr)}}@media(max-width:650px){.nav{flex-wrap:wrap}.search{order:3;flex-basis:100%}.hero{padding:26px}.hero .tag{font-size:48px}.products{grid-template-columns:repeat(2,1fr)}}@media(max-width:390px){.products{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="nav">
+  <div class="logo">ShopEase</div>
+  <div class="search"><input id="search" type="search" placeholder="Search products..." aria-label="Search products"></div>
+  <button class="cart-btn" id="openCart">Cart (<span id="cartCount">0</span>)</button>
+</div></header>
+<main>
+  <section class="hero"><div><h1>Find your next favourite.</h1><p>Great everyday products, simple shopping.<br>Browse the collection and add something to your cart.</p></div><div class="tag" aria-hidden="true">🛍️</div></section>
+  <div class="toolbar"><h2>Featured products</h2><select id="category"><option value="all">All categories</option><option>Electronics</option><option>Fashion</option><option>Home</option><option>Accessories</option></select></div>
+  <section class="products" id="products"></section>
+</main>
+<footer>© 2026 ShopEase. Demo storefront — checkout does not process real payments.</footer>
+<div class="overlay" id="overlay" aria-hidden="true"><aside class="drawer">
+  <div class="drawer-head"><h2>Your cart</h2><button class="close" id="closeCart">Close</button></div>
+  <div id="cartItems"></div><div class="total"><span>Total</span><span id="total">$0.00</span></div>
+  <button class="primary checkout" id="checkout">Continue to checkout</button>
+  <p class="note">Demo only: this storefront does not collect payment or send orders. Connect a secure backend and payment provider before accepting real orders.</p>
+</aside></div>
+<script>
+const products = [
+ {id:1,name:"Wireless Headphones",category:"Electronics",price:49.99,image:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=700",desc:"Comfortable everyday sound"},
+ {id:2,name:"Classic Sneakers",category:"Fashion",price:64.00,image:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700",desc:"A versatile casual pair"},
+ {id:3,name:"Minimal Desk Lamp",category:"Home",price:29.50,image:"https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=700",desc:"Warm light for your space"},
+ {id:4,name:"Everyday Backpack",category:"Accessories",price:39.99,image:"https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=700",desc:"Room for daily essentials"},
+ {id:5,name:"Smart Watch",category:"Electronics",price:89.00,image:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=700",desc:"Keep your day organized"},
+ {id:6,name:"Cotton Hoodie",category:"Fashion",price:42.00,image:"https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=700",desc:"A comfortable layer"},
+ {id:7,name:"Ceramic Planter",category:"Home",price:18.75,image:"https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=700",desc:"A simple home accent"},
+ {id:8,name:"Sunglasses",category:"Accessories",price:24.99,image:"https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=700",desc:"Classic everyday style"}
+];
+// Replace any unavailable demo image URL with a neutral fallback.
+const fallback = "https://placehold.co/600x400?text=ShopEase";
+let cart = JSON.parse(localStorage.getItem("shopease-cart") || "[]");
+const money = n => "$" + n.toFixed(2);
+function save(){localStorage.setItem("shopease-cart",JSON.stringify(cart));renderCart();document.getElementById("cartCount").textContent=cart.reduce((s,x)=>s+x.qty,0)}
+function renderProducts(){
+ const q=document.getElementById("search").value.toLowerCase(),cat=document.getElementById("category").value;
+ const list=products.filter(p=>(cat==="all"||p.category===cat)&&(p.name+" "+p.category+" "+p.desc).toLowerCase().includes(q));
+ document.getElementById("products").innerHTML=list.length?list.map(p=>`<article class="product"><img src="${p.image}" alt="${p.name}" onerror="this.src='${fallback}'"><div class="info"><span class="category">${p.category}</span><h3>${p.name}</h3><span>${p.desc}</span><div class="price">${money(p.price)}</div><button class="primary" onclick="addToCart(${p.id})">Add to cart</button></div></article>`).join(""):'<div class="empty">No products found. Try another search.</div>';
+}
+function addToCart(id){const item=cart.find(x=>x.id===id);if(item)item.qty++;else cart.push({id,qty:1});save()}
+function changeQty(id,delta){const item=cart.find(x=>x.id===id);if(!item)return;item.qty+=delta;if(item.qty<=0)cart=cart.filter(x=>x.id!==id);save()}
+function renderCart(){
+ const root=document.getElementById("cartItems");
+ root.innerHTML=cart.length?cart.map(x=>{const p=products.find(p=>p.id===x.id);return `<div class="cart-item"><img src="${p.image}" alt=""><div><h4>${p.name}</h4><div>${money(p.price)} each</div><div class="qty"><button onclick="changeQty(${p.id},-1)" aria-label="Decrease quantity">−</button><span>${x.qty}</span><button onclick="changeQty(${p.id},1)" aria-label="Increase quantity">+</button></div></div><strong>${money(p.price*x.qty)}</strong></div>`}).join(""):'<p>Your cart is empty.</p>';
+ document.getElementById("total").textContent=money(cart.reduce((s,x)=>s+products.find(p=>p.id===x.id).price*x.qty,0));
+ document.getElementById("cartCount").textContent=cart.reduce((s,x)=>s+x.qty,0);
+}
+function showCart(open){document.getElementById("overlay").classList.toggle("open",open);document.getElementById("overlay").setAttribute("aria-hidden",String(!open))}
+document.getElementById("search").addEventListener("input",renderProducts);
+document.getElementById("category").addEventListener("change",renderProducts);
+document.getElementById("openCart").addEventListener("click",()=>showCart(true));
+document.getElementById("closeCart").addEventListener("click",()=>showCart(false));
+document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")showCart(false)});
+document.getElementById("checkout").addEventListener("click",()=>{if(!cart.length){alert("Your cart is empty.");return}alert("Demo checkout only. No order or payment has been placed.");});
+renderProducts();save();
+</script>
+</body></html>
